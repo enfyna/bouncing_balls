@@ -1,0 +1,7 @@
+.cache/
+raylib*
+
+compile_commands.json
+
+*.o
+*.lib
