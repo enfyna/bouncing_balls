@@ -22,22 +22,24 @@ CONTAINER_OBJ=$(patsubst $(CONTAINER_DIR)/src/%.c, $(CONTAINER_DIR)/obj/%.o, $(C
 # $(info CONTAINER_SRC is $(CONTAINER_SRC))
 # $(info CONTAINER_OBJ is $(CONTAINER_OBJ))
 
-.PHONY: clean
+BUILD_DIR=./build
+$(shell test -d $(BUILD_DIR)         || mkdir -p $(BUILD_DIR))
+$(shell test -d $(CONTAINER_DIR)/obj || mkdir -p $(CONTAINER_DIR)/obj)
+$(shell test -d $(CONTAINER_DIR)/lib || mkdir -p $(CONTAINER_DIR)/lib)
 
 default: main
 
-$(CONTAINER_DIR)/obj/%.o: $(CONTAINER_DIR)/src/%.c
-	mkdir -p $(CONTAINER_DIR)/obj
-	$(CC) $^ -c -o $@ -I$(RAYLIB_DIR)/include/ -I$(CONTAINER_DIR)/include $(CFLAGS)
-
 main: main.c libcontainer.a
-	$(CC) -o $@ $< $(RAYLIB_CFLAGS) $(CONTAINER_CFLAGS) $(CFLAGS)
+	$(CC) -o $(BUILD_DIR)/$@ $< $(RAYLIB_CFLAGS) $(CONTAINER_CFLAGS) $(CFLAGS)
 
 libcontainer.a: $(CONTAINER_OBJ)
-	mkdir -p $(CONTAINER_DIR)/lib
-	ar -rcv $(CONTAINER_DIR)/lib/$@ $(CONTAINER_OBJ)
+	ar -crv $(CONTAINER_DIR)/lib/$@ $(CONTAINER_OBJ)
 
+$(CONTAINER_DIR)/obj/%.o: $(CONTAINER_DIR)/src/%.c
+	$(CC) $^ -c -o $@ -I$(RAYLIB_DIR)/include/ -I$(CONTAINER_DIR)/include $(CFLAGS)
+
+.PHONY: clean
 clean:
-	rm -fr ./container/lib/ 
-	rm -fr ./container/obj/
-	rm -fr main
+	rm -fr $(CONTAINER_DIR)/lib/ 
+	rm -fr $(CONTAINER_DIR)/obj/
+	rm -fr $(BUILD_DIR)
