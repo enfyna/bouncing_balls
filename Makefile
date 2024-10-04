@@ -22,6 +22,7 @@ CONTAINER_OBJ=$(patsubst $(CONTAINER_DIR)/src/%.c, $(CONTAINER_DIR)/obj/%.o, $(C
 # $(info CONTAINER_SRC is $(CONTAINER_SRC))
 # $(info CONTAINER_OBJ is $(CONTAINER_OBJ))
 
+SRC_DIR=./src
 BUILD_DIR=./build
 $(shell test -d $(BUILD_DIR)         || mkdir -p $(BUILD_DIR))
 $(shell test -d $(CONTAINER_DIR)/obj || mkdir -p $(CONTAINER_DIR)/obj)
@@ -29,7 +30,7 @@ $(shell test -d $(CONTAINER_DIR)/lib || mkdir -p $(CONTAINER_DIR)/lib)
 
 default: main
 
-main: main.c libcontainer.a
+main: $(SRC_DIR)/main.c libcontainer.a
 	$(CC) -o $(BUILD_DIR)/$@ $< $(RAYLIB_CFLAGS) $(CONTAINER_CFLAGS) $(CFLAGS)
 
 libcontainer.a: $(CONTAINER_OBJ)

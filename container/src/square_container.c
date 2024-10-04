@@ -1,17 +1,15 @@
-#include <stdlib.h>
-
 #include "container.h"
 #include "raylib.h"
 
-void draw_square_container(ContainerData* c, int screen_width, int screen_height){
-    int x = c->center.x - (c->size / 2.0);
-    int y = c->center.y - (c->size / 2.0);
+void draw_square_container(ContainerData* c){
+    float x = c->center.x - (c->size / 2.0);
+    float y = c->center.y - (c->size / 2.0);
 
     DrawRectangle(
         x - c->padding,
         y - c->padding,
-        c->size,
-        c->size,
+        c->size + c->padding * 2.0,
+        c->size + c->padding * 2.0,
         c->color
     );
     DrawRectangle(
@@ -21,23 +19,40 @@ void draw_square_container(ContainerData* c, int screen_width, int screen_height
     );
 }
 
-void square_container_hitbox(ContainerData* c, Vector2 *b_pos, Vector2 *b_spd){
-    if(b_pos->y < 50 + c->ball_size){
-        b_spd->y = +(random() % 7 + 3);
-        b_pos->y = 50 + c->ball_size;
-    } else if (b_pos->y > c->center.y - 50 - c->ball_size){
-        b_spd->y = -(random() % 10 + 3);
-        b_pos->y = c->center.y - 50 - c->ball_size;
-        if (b_spd->x == 0) {
-            b_spd->x = (random() % 10) - 5;
-        }
-    } 
-    if(b_pos->x < 50 + c->ball_size){
-        b_spd->x = random() % 7 + 3;
-        b_pos->x = 50 + c->ball_size;
-    } else if (b_pos->x > c->center.x - 50 - c->ball_size){
-        b_spd->x = -(random() % 7 + 3);
-        b_pos->x = c->center.x - 50 - c->ball_size;
-    }
-}
+void square_container_hitbox(ContainerData* c, ball* b){
+    const float x_diff = (c->size / 2.0);
+    const float y_diff = (c->size / 2.0);
 
+    b->speed->y += c->gravity * c->delta;
+
+    float nx = b->pos->x + b->speed->x * c->delta; 
+    float ny = b->pos->y + b->speed->y * c->delta; 
+
+    if (nx - b->size <= c->center.x - x_diff) {
+        nx = c->center.x - x_diff + b->size;
+        b->speed->x *= c->damp;
+    } else if (nx + b->size >= c->center.x + x_diff) {
+        nx = c->center.x + x_diff - b->size;
+        b->speed->x *= c->damp;
+    }
+
+    if (ny - b->size < c->center.y - y_diff) {
+        ny = c->center.y - y_diff + b->size;
+        b->speed->y *= c->damp;
+    } else if (ny + b->size > c->center.y + y_diff) {
+        ny = c->center.y + y_diff - b->size;
+        b->speed->y *= c->damp;
+    }
+
+    if (c->debug) {
+        DrawLine(
+            b->pos->x, b->pos->y,
+            b->pos->x + b->speed->x,
+            b->pos->y + b->speed->y,
+            WHITE
+        );
+    }
+
+    b->pos->x = nx;
+    b->pos->y = ny;
+}

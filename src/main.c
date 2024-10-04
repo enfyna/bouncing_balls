@@ -2,7 +2,6 @@
 #include "container.h"
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,123 +11,102 @@
 #define BG_COLOR BLACK
 
 #define TITLE "Bouncing Balls"
-#define FPS 60
+#define FPS 60.0
 
-// #define DEBUG
-
-#define CONTAINER_SIZE 300
-#define CONTAINER_PADDING 5
+#define CONTAINER_SIZE 200
+#define CONTAINER_PADDING 4
 #define CONTAINER_WIDTH CONTAINER_SIZE + CONTAINER_PADDING * 2
 #define CONTAINER_COLOR RAYWHITE
 
-#define BALL_COUNT 25
-#define BALL_SIZE 15
-#define BALL_PADDING 2
+#define BALL_COUNT 10
 
-#define GRAVITY 0.2
+#define GRAVITY 1000 // 100.0
 
 #define LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
-typedef struct {
-    Vector2 pos;
-    Vector2 speed;
-    Color color;
-} ball;
 
+void draw_debug_container(); 
 void draw_container(void);
 
 int main(int argc, char **argv){
-    bool CONTAINER_SHAPE = 1;
+    short c_shape = 1;
+    bool debug = false;
 
     for (int i = 0; i < argc; i++) {
-        printf("%s res: %d\n", argv[i], !strcmp(argv[i], "circle"));
         if (!strcmp(argv[i], "circle")) {
-            CONTAINER_SHAPE = 0;
+            c_shape = 0;
         } else if (!strcmp(argv[i], "square")) {
-            CONTAINER_SHAPE = 1;
+            c_shape = 1;
+        } else if (!strcmp(argv[i], "debug")) {
+            debug = true;
         }
     }
-
-    Container* container = get_container(CONTAINER_SHAPE);
-    ContainerData data = {
-        .center = CENTER,
-        .size = CONTAINER_SIZE,
-        .padding = CONTAINER_PADDING,
-
-        .gravity = GRAVITY,
-        .ball_size = BALL_SIZE,
-
-        .bg_color = BG_COLOR,
-        .color = CONTAINER_COLOR,
-    };
-    container->data = &data;
 
     InitWindow(WIDTH, HEIGHT, TITLE);
     SetTargetFPS(FPS);
 
-    ball balls[BALL_COUNT] = {};
-    Color colors[4] = { RED, GREEN, YELLOW, BLUE };
+    Container* container = get_container(c_shape);
+    ContainerData data = {
+        .center = CENTER,
+        .size = CONTAINER_SIZE,
+        .padding = CONTAINER_PADDING,
+        .shape = c_shape,
+        .gravity = GRAVITY,
+        .damp = -0.8,
+        .bg_color = BG_COLOR,
+        .color = CONTAINER_COLOR,
+        .debug = debug,
+    };
+    container->data = &data;
+
+    ball* balls = malloc(sizeof(ball) * BALL_COUNT);
 
     for (int i = 0; i < BALL_COUNT; i++) {
-        ball b = balls[i];
-        b.speed = (Vector2){ random() % 10, random() % 10 };
-        b.pos   = (Vector2){ random() % WIDTH, random() % HEIGHT };
-        b.speed = (Vector2){ 0, 0 };
-        b.pos   = (Vector2){ 200, 200 };
-        b.color = colors[GetRandomValue(0, 3)];
-        balls[i] = b;
+        Vector2* spd = malloc(sizeof(Vector2));
+        spd->x = GetRandomValue(-300, 300);
+        spd->y = GetRandomValue(-300, 300);
+        Vector2* pos = malloc(sizeof(Vector2));
+        pos->x = GetRandomValue(CENTER.x - CONTAINER_SIZE / 4.0, CENTER.x + CONTAINER_SIZE / 4.0);
+        pos->y = GetRandomValue(CENTER.y - CONTAINER_SIZE / 4.0, CENTER.y + CONTAINER_SIZE / 4.0);
+        ball bd = {
+            .speed = spd,
+            .pos = pos, 
+            .color = ColorFromHSV(GetRandomValue(0.0, 360.0), 0.7, 0.9),
+            .size = 16,
+            .padding = 8,
+        };
+        balls[i] = bd;
     }
 
-    double delta = 60.0 / FPS;
-
-    bool user_wants_exit = false;
-
-    while (!WindowShouldClose() && !user_wants_exit) {
+    while (!WindowShouldClose() && !IsKeyDown(KEY_ENTER)) {
         BeginDrawing();
-
+            ClearBackground(BG_COLOR);
             Vector2 m_pos = GetMousePosition();
 
-            #ifndef DEBUG
-                ClearBackground(BG_COLOR);
-                container->draw(container->data, WIDTH, HEIGHT);
-            #else
+            container->data->delta = GetFrameTime();
+
+            container->draw(container->data);
+            if (debug) {
                 const char* m_str = TextFormat("x: %d y: %d", (int)m_pos.x, (int)m_pos.y);
                 draw_debug_container();
                 DrawText(m_str, m_pos.x + 10, m_pos.y + 10, 20, WHITE);
                 DrawCircle(m_pos.x, m_pos.y, 12, IsMouseButtonDown(MOUSE_LEFT_BUTTON) ? BLUE : IsMouseButtonDown(MOUSE_RIGHT_BUTTON) ? GREEN : RED);
-            #endif
+            }
 
             for (int i = 0; i < BALL_COUNT; i++) {
                 ball b = balls[i];
-                Vector2 b_pos = b.pos;
-
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-                    b_pos.x = b_pos.x + ((m_pos.x - b_pos.x) / 10) - random() % 7 + 3;
-                    b_pos.y = b_pos.y + ((m_pos.y - b_pos.y) / 10) - random() % 7 + 3;
+                    b.pos->x = b.pos->x + ((m_pos.x - b.pos->x) / 10) - random() % 7 + 3;
+                    b.pos->y = b.pos->y + ((m_pos.y - b.pos->y) / 10) - random() % 7 + 3;
                 } else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
-                    b_pos.x = b_pos.x - ((m_pos.x - b_pos.x) / 10) - random() % 7 + 3;
-                    b_pos.y = b_pos.y - ((m_pos.y - b_pos.y) / 10) - random() % 7 + 3;
+                    b.pos->x = b.pos->x - ((m_pos.x - b.pos->x) / 10) - random() % 7 + 3;
+                    b.pos->y = b.pos->y - ((m_pos.y - b.pos->y) / 10) - random() % 7 + 3;
                 } else {
-                    Vector2 b_spd = b.speed;
 
-                    container->calculate_hitbox(container->data, &b_pos, &b_spd);
-
-                    b_spd.y += GRAVITY;
-
-                    b_pos.y += b_spd.y * delta;
-                    b_pos.x += b_spd.x * delta;
-
-                    balls[i].speed = b_spd;
+                 container->calculate_hitbox(container->data, &b);
                 }
-                balls[i].pos = b_pos;
-                DrawCircle(b_pos.x, b_pos.y, BALL_SIZE + BALL_PADDING, WHITE);
-                DrawCircle(b_pos.x, b_pos.y, BALL_SIZE, b.color);
+                DrawRing((Vector2){ b.pos->x, b.pos->y }, b.size - b.padding, b.size, 0, 360, -1, b.color);
             }
-
-            if (IsKeyDown(KEY_ENTER)) {
-                user_wants_exit = true;
-            }
-
         EndDrawing();
     }
     CloseWindow();
@@ -152,4 +130,3 @@ void draw_debug_container() {
     DrawCircle(300, 25, 5, (Color){ 0,  80, 0, 255 });
     DrawCircle(350, 25, 5, (Color){ 0,  40, 0, 255 });
 }
-

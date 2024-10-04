@@ -1,38 +1,112 @@
-#include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 #include "container.h"
 #include "raylib.h"
+#include "raymath.h"
 
-void draw_circle_container(ContainerData* c, int screen_width, int screen_height){
-    DrawCircle(
-        screen_width, screen_height,
-        (c->size + c->padding * 2) / 2.0,
+static Vector2 rotateVec2(Vector2 size, float deg);
+static void draw_degree(ContainerData* c, Color color, float deg);
+
+void draw_circle_container(ContainerData* c){
+    DrawRing(
+        c->center,
+        c->size / 2.0,
+        c->size / 2.0 + c->padding,
+        0, 360,
+        64,
         c->color
     );
-
-    DrawCircle(screen_width, screen_height, c->size / 2.0, c->bg_color);
 }
 
-void circle_container_hitbox(ContainerData* c, Vector2 *b_pos, Vector2 *b_spd){
-    float x_diff = c->center.x - b_pos->x;
-    float y_diff = c->center.y - b_pos->y;
+void circle_container_hitbox(ContainerData* c, ball* b){
+    b->speed->y += c->gravity * c->delta;
 
-    float dist = pow(fabs(x_diff), 2) + pow(fabs(y_diff), 2);
-    
-    if (dist > pow((c->size / 2.0) - c->ball_size, 2)) {
-        b_spd->y = -(b_spd->y + c->gravity); // cancel gravity
+    const float nx = b->pos->x + b->speed->x * c->delta; 
+    const float ny = b->pos->y + b->speed->y * c->delta; 
 
-        if (b_pos->x > c->center.x + 50) {
-            b_spd->x = -fabs(b_spd->x);
-        } else if (b_pos->x < c->center.x - 50){
-            b_spd->x = fabs(b_spd->x);
-        }
+    const float x_diff = c->center.x - nx;
+    const float y_diff = c->center.y - ny;
 
-        if(b_spd->x == 0){
-            b_spd->x = random() % 10 - 5;
-            b_spd->y += random() % 3;
-        }
+    const float n_diff = pow(fabs(x_diff), 2) + pow(fabs(y_diff), 2);
+    const float c_c2 = pow((c->size - b->size) / 2.0, 2);
+
+    float rad = atan(y_diff / x_diff);
+    float deg = rad * RAD2DEG;
+    if (x_diff > 0) {
+        deg += 180;
+    }
+
+    if (c->debug) {
+        draw_degree(c, BLUE, 0);
+        draw_degree(c, BLUE, 90);
+        draw_degree(c, BLUE, 120);
+        draw_degree(c, RED, deg);
+
+        DrawLine(
+            b->pos->x, b->pos->y,
+            b->pos->x + b->speed->x,
+            b->pos->y + b->speed->y,
+            WHITE
+        );
+    }
+
+    Vector2 res = Vector2Rotate(*b->speed, deg * DEG2RAD);
+
+    if (c->debug) {
+        DrawLine(
+            b->pos->x, b->pos->y,
+            b->pos->x + res.x,
+            b->pos->y + res.y,
+            GREEN
+        );
+    }
+
+    res = Vector2Scale(res, 0.8);
+
+    if (c_c2 <= n_diff) {
+        b->speed->x = res.x;
+        b->speed->y = res.y;
+    }     
+    else {
+        b->pos->x = nx;
+        b->pos->y = ny;
     }
 }
 
+static void draw_degree(ContainerData* c, Color color, float deg){
+    Vector2 res = rotateVec2(
+        (Vector2){ c->size / 2.0, c->size / 2.0 },
+        deg
+    );
+        printf("deg: %lf\n", deg + 90);
+    DrawLine(
+        c->center.x,
+        c->center.y,
+        c->center.x + res.x,
+        c->center.y + res.y,
+        color
+    );
+}
+
+static Vector2 rotateVec2(Vector2 size, float deg){
+    float x = size.x;
+    float y = size.y;
+
+    const float mx = cos(deg * DEG2RAD);
+    const float my = sin(deg * DEG2RAD);
+
+    x *= mx;
+    y *= my;
+
+    size.x = x;
+    size.y = y;
+
+    return size;
+}
+
+// if (x_diff < 0 && y_diff < 0) {
+// } else if (x_diff < 0 && y_diff > 0) {
+// } else if (x_diff > 0 && y_diff < 0) {
+// } else if (x_diff > 0 && y_diff > 0) {
+// }

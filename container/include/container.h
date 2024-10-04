@@ -4,18 +4,28 @@
 #define SQUARE_CONTAINER 1
 
 typedef struct {
+    Vector2* pos;
+    Vector2* speed;
+    Color color;
+    short size;
+    short padding;
+} ball;
+
+typedef struct {
     int size;
     int padding;
-    int ball_size;
-    int shape;
+    short shape;
     double gravity;
+    float delta;
+    float damp;
     Vector2 center;
     Color color;
     Color bg_color;
+    bool debug;
 } ContainerData;
 
-typedef void (*hitbox_calculator)(ContainerData* c, Vector2 *ball_pos, Vector2 *ball_spd);
-typedef void (*painter) (ContainerData* c, int screen_width, int screen_height);
+typedef void (*hitbox_calculator)(ContainerData* c, ball* b);
+typedef void (*painter) (ContainerData* c);
 
 typedef struct {
     ContainerData *data;
@@ -28,9 +38,9 @@ Container *get_container(int type);
 void free_container(Container *c);
 
 // Circle Container Functions
-void draw_circle_container(ContainerData* c, int screen_width, int screen_height);
-void circle_container_hitbox(ContainerData* c, Vector2 *b_pos, Vector2 *b_spd);
+void draw_circle_container(ContainerData* c);
+void circle_container_hitbox(ContainerData* c, ball* b);
 
 // Square Container Functions
-void draw_square_container(ContainerData* c, int screen_width, int screen_height);
-void square_container_hitbox(ContainerData* c, Vector2 *b_pos, Vector2 *b_spd);
+void draw_square_container(ContainerData* c);
+void square_container_hitbox(ContainerData* c, ball* b);
