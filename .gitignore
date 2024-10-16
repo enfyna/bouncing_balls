@@ -1,4 +1,6 @@
 .cache/
+build/
+lib/
 raylib*
 
 compile_commands.json
