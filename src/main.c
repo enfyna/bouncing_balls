@@ -2,6 +2,7 @@
 #include "container.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -58,8 +59,7 @@ int main(int argc, char **argv){
         .color = CONTAINER_COLOR,
         .debug = debug,
     };
-    container->data = &data;
-
+    container->data = data;
 
     ball* balls = create_balls(NULL, ball_count);
     while (!WindowShouldClose() && !IsKeyDown(KEY_ENTER)) {
@@ -67,9 +67,9 @@ int main(int argc, char **argv){
             ClearBackground(BG_COLOR);
             Vector2 m_pos = GetMousePosition();
 
-            container->data->delta = GetFrameTime();
+            container->data.delta = GetFrameTime();
 
-            container->draw(container->data);
+            container->draw(&container->data);
             if (debug) {
                 const char* m_str = TextFormat("x: %d y: %d", (int)m_pos.x, (int)m_pos.y);
                 draw_debug_container();

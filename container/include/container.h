@@ -28,7 +28,7 @@ typedef void (*hitbox_calculator)(ContainerData* c, ball* b);
 typedef void (*painter) (ContainerData* c);
 
 typedef struct {
-    ContainerData *data;
+    ContainerData data;
     hitbox_calculator calculate_hitbox;
     painter draw;
 } Container;
