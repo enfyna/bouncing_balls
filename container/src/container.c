@@ -4,7 +4,6 @@
 
 Container* get_container(int type){
     Container *c = malloc(sizeof(Container));
-    c->data.shape = type;
 
     if (type == SQUARE_CONTAINER) {
         c->calculate_hitbox = square_container_hitbox;

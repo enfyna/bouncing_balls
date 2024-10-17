@@ -93,6 +93,9 @@ int main(int argc, char **argv){
             if (IsKeyPressed(KEY_SPACE)) {
                 free_balls(balls, ball_count);
                 balls = create_balls(NULL, ++ball_count);
+            } else if (ball_count > 0 && IsKeyPressed(KEY_TAB)) {
+                free_balls(balls, ball_count);
+                balls = create_balls(NULL, --ball_count);
             }
         EndDrawing();
     }
