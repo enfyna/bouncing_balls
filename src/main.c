@@ -80,11 +80,11 @@ int main(int argc, char **argv){
             for (int i = 0; i < ball_count; i++) {
                 ball b = balls[i];
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-                    b.pos->x = b.pos->x + ((m_pos.x - b.pos->x) / 10) - random() % 7 + 3;
-                    b.pos->y = b.pos->y + ((m_pos.y - b.pos->y) / 10) - random() % 7 + 3;
+                    b.pos->x = b.pos->x + ((m_pos.x - b.pos->x) / 10) - GetRandomValue(7, 10);
+                    b.pos->y = b.pos->y + ((m_pos.y - b.pos->y) / 10) - GetRandomValue(7, 10);
                 } else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
-                    b.pos->x = b.pos->x - ((m_pos.x - b.pos->x) / 10) - random() % 7 + 3;
-                    b.pos->y = b.pos->y - ((m_pos.y - b.pos->y) / 10) - random() % 7 + 3;
+                    b.pos->x = b.pos->x - ((m_pos.x - b.pos->x) / 10) - GetRandomValue(7, 10);
+                    b.pos->y = b.pos->y - ((m_pos.y - b.pos->y) / 10) - GetRandomValue(7, 10);
                 } else {
                     container->calculate_hitbox(&container->data, &b);
                 }
