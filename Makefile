@@ -1,19 +1,29 @@
 $(info ---------------------------------)
-CC=clang
 CFLAGS= -Wall -Wextra 
 # -ggdb
-$(info CC => $(CC))
+
 $(info CFLAGS => $(CFLAGS))
 $(info ---------------------------------)
 
+# linux
+CC=clang
 RAYLIB_DIR=./raylib-5.0_linux_amd64
 RAYLIB_CFLAGS= -l:libraylib.a -lm -I$(RAYLIB_DIR)/include/ -L$(RAYLIB_DIR)/lib/ 
 
+# windows
+CC_W=x86_64-w64-mingw32-gcc
+RAYLIB_DIR_W=./raylib-5.0_win64_mingw-w64
+RAYLIB_CFLAGS_W= -l:libraylib.a -lm -I$(RAYLIB_DIR_W)/include/ -L$(RAYLIB_DIR_W)/lib/ 
+
+$(info CC => $(CC))
 $(info RAYLIB_CFLAGS => $(RAYLIB_CFLAGS))
+$(info ---------------------------------)
+$(info CC_W => $(CC_W))
+$(info RAYLIB_CFLAGS_W => $(RAYLIB_CFLAGS_W))
 $(info ---------------------------------)
 
 CONTAINER_DIR=./container
-CONTAINER_CFLAGS= -lcontainer  -I$(CONTAINER_DIR)/include/ -L$(CONTAINER_DIR)/lib/ 
+CONTAINER_CFLAGS= -I$(CONTAINER_DIR)/include/ -L$(CONTAINER_DIR)/lib/ -lcontainer
 
 CONTAINER_SRC=$(wildcard ./container/src/*)
 CONTAINER_OBJ=$(patsubst $(CONTAINER_DIR)/src/%.c, $(CONTAINER_DIR)/obj/%.o, $(CONTAINER_SRC))
@@ -36,6 +46,9 @@ default: main
 
 main: $(SRC_DIR)/main.c libcontainer.a
 	$(CC) -o $(BUILD_DIR)/$@ $< $(RAYLIB_CFLAGS) $(CONTAINER_CFLAGS) $(CFLAGS)
+
+win: $(SRC_DIR)/main.c $(CONTAINER_SRC)
+	$(CC_W) -o $(BUILD_DIR)/$@.exe $^ $(RAYLIB_CFLAGS_W) -I$(CONTAINER_DIR)/include/ $(CFLAGS) -static -lwinmm -lgdi32 
 
 libcontainer.a: $(CONTAINER_OBJ)
 	ar -crv $(CONTAINER_DIR)/lib/$@ $(CONTAINER_OBJ)
