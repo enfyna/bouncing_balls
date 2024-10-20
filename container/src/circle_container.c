@@ -7,6 +7,7 @@
 
 static Vector2 rotateVec2(Vector2 size, float deg);
 static void draw_degree(ContainerData* c, Color color, float deg);
+static void print_debug(ContainerData* c, ball* b);
 
 void draw_circle_container(ContainerData* c){
     DrawRing(
@@ -20,6 +21,9 @@ void draw_circle_container(ContainerData* c){
 }
 
 void circle_container_hitbox(ContainerData* c, ball* b){
+    if (c->debug) {
+        print_debug(c, b);
+    }
     b->speed->y += c->gravity * c->delta;
 
     const float nx = b->pos->x + b->speed->x * c->delta; 
@@ -29,7 +33,54 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     const float y_diff = c->center.y - ny;
 
     const float n_diff = pow(fabs(x_diff), 2) + pow(fabs(y_diff), 2);
-    const float c_c2 = pow((c->size - b->size) / 2.0, 2);
+    const float c_c2 = pow((c->size - b->size * 2) / 2.0, 2);
+
+    // is ball distance shorter than the container radius
+    if (c_c2 > n_diff) {
+        // there is no collision then
+        b->pos->x = nx;
+        b->pos->y = ny;
+        return;
+    }
+
+    Vector2 normal = { x_diff, y_diff };
+    normal = Vector2Normalize(normal);
+
+    float dotProduct = Vector2DotProduct(*b->speed, normal);
+    Vector2 res = {
+        b->speed->x - 2 * dotProduct * normal.x,
+        b->speed->y - 2 * dotProduct * normal.y
+    };
+    float speed = Vector2Length(res);
+    if (speed < c->size / 2.0) {
+        res = Vector2Scale(res, 0.8);
+    }
+    b->speed->x = res.x;
+    b->speed->y = res.y;
+
+    float rad = atan(y_diff / x_diff);
+    float deg = rad * RAD2DEG;
+    if (x_diff > 0) {
+        deg += 180;
+    }
+    Vector2 collision_point = rotateVec2(
+        (Vector2){ c->size / 2.0, c->size / 2.0 },
+        deg
+    );
+    collision_point.x += c->center.x;
+    collision_point.y += c->center.y;
+
+    return;
+}
+
+static void print_debug(ContainerData* c, ball* b){
+    b->speed->y += c->gravity * c->delta;
+
+    const float nx = b->pos->x + b->speed->x * c->delta; 
+    const float ny = b->pos->y + b->speed->y * c->delta; 
+
+    const float x_diff = c->center.x - nx;
+    const float y_diff = c->center.y - ny;
 
     float rad = atan(y_diff / x_diff);
     float deg = rad * RAD2DEG;
@@ -37,41 +88,17 @@ void circle_container_hitbox(ContainerData* c, ball* b){
         deg += 180;
     }
 
-    if (c->debug) {
-        draw_degree(c, BLUE, 0);
-        draw_degree(c, BLUE, 90);
-        draw_degree(c, BLUE, 120);
-        draw_degree(c, RED, deg);
+    draw_degree(c, BLUE, 0);
+    draw_degree(c, BLUE, 90);
+    draw_degree(c, BLUE, 120);
+    draw_degree(c, RED, deg);
 
-        DrawLine(
-            b->pos->x, b->pos->y,
-            b->pos->x + b->speed->x,
-            b->pos->y + b->speed->y,
-            WHITE
-        );
-    }
-
-    Vector2 res = Vector2Rotate(*b->speed, deg * DEG2RAD);
-
-    if (c->debug) {
-        DrawLine(
-            b->pos->x, b->pos->y,
-            b->pos->x + res.x,
-            b->pos->y + res.y,
-            GREEN
-        );
-    }
-
-    res = Vector2Scale(res, 0.8);
-
-    if (c_c2 <= n_diff) {
-        b->speed->x = res.x;
-        b->speed->y = res.y;
-    }     
-    else {
-        b->pos->x = nx;
-        b->pos->y = ny;
-    }
+    DrawLine(
+        b->pos->x, b->pos->y,
+        b->pos->x + b->speed->x,
+        b->pos->y + b->speed->y,
+        WHITE
+    );
 }
 
 static void draw_degree(ContainerData* c, Color color, float deg){
@@ -79,7 +106,7 @@ static void draw_degree(ContainerData* c, Color color, float deg){
         (Vector2){ c->size / 2.0, c->size / 2.0 },
         deg
     );
-        printf("deg: %lf\n", deg + 90);
+    printf("deg: %lf\n", deg + 90);
     DrawLine(
         c->center.x,
         c->center.y,
@@ -104,9 +131,3 @@ static Vector2 rotateVec2(Vector2 size, float deg){
 
     return size;
 }
-
-// if (x_diff < 0 && y_diff < 0) {
-// } else if (x_diff < 0 && y_diff > 0) {
-// } else if (x_diff > 0 && y_diff < 0) {
-// } else if (x_diff > 0 && y_diff > 0) {
-// }
