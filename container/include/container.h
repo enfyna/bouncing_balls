@@ -1,5 +1,7 @@
 #include "raylib.h"
 
+#define LINE_LEN 255
+
 #define CIRCLE_CONTAINER 0
 #define SQUARE_CONTAINER 1
 
@@ -10,6 +12,8 @@ typedef struct {
     Color color;
     short size;
     short padding;
+    Vector2* points;
+    short point_count;
 } ball;
 
 typedef struct {
@@ -23,6 +27,7 @@ typedef struct {
     Color color;
     Color bg_color;
     bool debug;
+    short line_mode;
 } ContainerData;
 
 typedef void (*hitbox_calculator)(ContainerData* c, ball* b);

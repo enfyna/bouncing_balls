@@ -8,6 +8,9 @@
 static Vector2 rotateVec2(Vector2 size, float deg);
 static void draw_degree(ContainerData* c, Color color, float deg);
 static void print_debug(ContainerData* c, ball* b);
+static short min(short a, short b){
+    return (a < b) ? a : b;
+}
 
 void draw_circle_container(ContainerData* c){
     DrawRing(
@@ -24,6 +27,35 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     if (c->debug) {
         print_debug(c, b);
     }
+    for (short i = min(b->point_count, LINE_LEN) - 1; i >= 0; i--) {
+        if (c->line_mode == 3) {
+            if (i == 0) continue;
+            if (b->point_count > LINE_LEN && i == b->point_count % LINE_LEN) continue;
+            DrawLine(
+                b->points[i].x, b->points[i].y,
+                b->points[i - 1].x, b->points[i - 1].y,
+                b->color
+            );
+            continue;
+        } 
+        DrawLine(
+            b->pos->x, b->pos->y,
+            b->points[i].x, b->points[i].y,
+            b->color
+        );
+    }
+    if (c->line_mode == 3 
+        // draw only on wrap
+        && LINE_LEN <= b->point_count 
+        // dont draw on point change
+        && b->point_count % LINE_LEN != 0
+        ) {
+        DrawLine(
+            b->points[0].x, b->points[0].y,
+            b->points[LINE_LEN - 1].x, b->points[LINE_LEN - 1].y,
+            b->color
+        );
+    }
     b->speed->y += c->gravity * c->delta;
 
     const float nx = b->pos->x + b->speed->x * c->delta; 
@@ -34,6 +66,11 @@ void circle_container_hitbox(ContainerData* c, ball* b){
 
     const float n_diff = pow(fabs(x_diff), 2) + pow(fabs(y_diff), 2);
     const float c_c2 = pow((c->size - b->size * 2) / 2.0, 2);
+
+    if (c->line_mode == 2 || c->line_mode == 3) {
+        b->points[b->point_count % LINE_LEN] = *b->pos;
+        b->point_count += 1;
+    }
 
     // is ball distance shorter than the container radius
     if (c_c2 > n_diff) {
@@ -51,10 +88,7 @@ void circle_container_hitbox(ContainerData* c, ball* b){
         b->speed->x - 2 * dotProduct * normal.x,
         b->speed->y - 2 * dotProduct * normal.y
     };
-    float speed = Vector2Length(res);
-    if (speed < c->size / 2.0) {
-        res = Vector2Scale(res, 0.8);
-    }
+    res = Vector2Scale(res, c->damp);
     b->speed->x = res.x;
     b->speed->y = res.y;
 
@@ -70,6 +104,10 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     collision_point.x += c->center.x;
     collision_point.y += c->center.y;
 
+    if (c->line_mode == 1) {
+        b->points[b->point_count % LINE_LEN] = collision_point;
+        b->point_count += 1;
+    }
     return;
 }
 

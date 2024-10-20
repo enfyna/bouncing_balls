@@ -32,7 +32,9 @@ int main(int argc, char **argv){
     short ball_padding = 8;
 
     short c_shape = 0;
+    float c_damp = 0.8;
     int c_size = 200;
+    short line_mode = 0;
 
     bool debug = false;
     float gravity = 1000.0;
@@ -44,6 +46,10 @@ int main(int argc, char **argv){
             c_shape = 1;
         } else if (!strcmp(argv[i], "-cs")) {
             c_size = atoi(argv[++i]);
+        } else if (!strcmp(argv[i], "-cd")) {
+            c_damp = atof(argv[++i]);
+        } else if (!strcmp(argv[i], "-clm")) {
+            line_mode = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "-g")) {
             gravity = atof(argv[++i]);
         } else if (!strcmp(argv[i], "-bp")) {
@@ -67,10 +73,11 @@ int main(int argc, char **argv){
         .padding = CONTAINER_PADDING,
         .shape = c_shape,
         .gravity = gravity,
-        .damp = -0.8,
+        .damp = c_damp,
         .bg_color = BG_COLOR,
         .color = CONTAINER_COLOR,
         .debug = debug,
+        .line_mode = line_mode,
     };
     container->data = data;
 
@@ -99,7 +106,7 @@ int main(int argc, char **argv){
                     b.pos->x = b.pos->x - ((m_pos.x - b.pos->x) / 10) - GetRandomValue(7, 10);
                     b.pos->y = b.pos->y - ((m_pos.y - b.pos->y) / 10) - GetRandomValue(7, 10);
                 } else {
-                    container->calculate_hitbox(&container->data, &b);
+                    container->calculate_hitbox(&container->data, balls + i);
                 }
                 DrawRing((Vector2){ b.pos->x, b.pos->y }, b.size - b.padding, b.size, 0, 360, -1, b.color);
             }
@@ -134,9 +141,11 @@ ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padd
         pos->y = GetRandomValue(CENTER.y - c_size / 4.0, CENTER.y + c_size / 4.0);
         ball bd = {
             .id = i,
+            .points = malloc(sizeof(Vector2) * 255),
+            .point_count = 0,
             .speed = spd,
             .pos = pos, 
-            .color = ColorFromHSV(GetRandomValue(0.0, 360.0), 0.7, 0.9),
+            .color = ColorFromHSV(GetRandomValue(0.0, 360.0), 1.0, 1.0),
             .size = ball_size,
             .padding = ball_padding,
         };
@@ -148,6 +157,7 @@ ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padd
 
 void free_balls(ball* balls, int ball_count){
     for (int i = 0; i < ball_count; i++) {
+        free(balls[i].points);
         free(balls[i].speed);
         free(balls[i].pos);
     }
