@@ -4,6 +4,7 @@
 #define SQUARE_CONTAINER 1
 
 typedef struct {
+    int id; 
     Vector2* pos;
     Vector2* speed;
     Color color;

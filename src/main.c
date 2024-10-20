@@ -120,6 +120,7 @@ ball* create_balls(ball* balls, int ball_count){
         pos->x = GetRandomValue(CENTER.x - CONTAINER_SIZE / 4.0, CENTER.x + CONTAINER_SIZE / 4.0);
         pos->y = GetRandomValue(CENTER.y - CONTAINER_SIZE / 4.0, CENTER.y + CONTAINER_SIZE / 4.0);
         ball bd = {
+            .id = i,
             .speed = spd,
             .pos = pos, 
             .color = ColorFromHSV(GetRandomValue(0.0, 360.0), 0.7, 0.9),
