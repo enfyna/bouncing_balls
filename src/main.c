@@ -14,7 +14,6 @@
 #define TITLE "Bouncing Balls"
 #define FPS 60.0
 
-#define CONTAINER_SIZE 200
 #define CONTAINER_PADDING 4
 #define CONTAINER_WIDTH CONTAINER_SIZE + CONTAINER_PADDING * 2
 #define CONTAINER_COLOR RAYWHITE
@@ -24,19 +23,33 @@
 void draw_debug_container(); 
 void draw_container(void);
 
-ball* create_balls(ball* balls, int ball_count);
+ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padding, int c_size);
 void free_balls(ball* balls, int ball_count);
 
 int main(int argc, char **argv){
     int ball_count = 10;
+    short ball_size = 12;
+    short ball_padding = 8;
+
     short c_shape = 0;
+    int c_size = 200;
+
     bool debug = false;
+    float gravity = 1000.0;
 
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "circle")) {
             c_shape = 0;
         } else if (!strcmp(argv[i], "square")) {
             c_shape = 1;
+        } else if (!strcmp(argv[i], "-cs")) {
+            c_size = atoi(argv[++i]);
+        } else if (!strcmp(argv[i], "-g")) {
+            gravity = atof(argv[++i]);
+        } else if (!strcmp(argv[i], "-bp")) {
+            ball_padding = atoi(argv[++i]);
+        } else if (!strcmp(argv[i], "-bs")) {
+            ball_size = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "-bc")) {
             ball_count = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "debug")) {
@@ -50,10 +63,10 @@ int main(int argc, char **argv){
     Container* container = get_container(c_shape);
     ContainerData data = {
         .center = CENTER,
-        .size = CONTAINER_SIZE,
+        .size = c_size,
         .padding = CONTAINER_PADDING,
         .shape = c_shape,
-        .gravity = GRAVITY,
+        .gravity = gravity,
         .damp = -0.8,
         .bg_color = BG_COLOR,
         .color = CONTAINER_COLOR,
@@ -61,7 +74,7 @@ int main(int argc, char **argv){
     };
     container->data = data;
 
-    ball* balls = create_balls(NULL, ball_count);
+    ball* balls = create_balls(NULL, ball_count, ball_size, ball_padding, c_size);
     while (!WindowShouldClose() && !IsKeyDown(KEY_ENTER)) {
         BeginDrawing();
             ClearBackground(BG_COLOR);
@@ -92,10 +105,10 @@ int main(int argc, char **argv){
             }
             if (IsKeyPressed(KEY_SPACE)) {
                 free_balls(balls, ball_count);
-                balls = create_balls(NULL, ++ball_count);
+                balls = create_balls(NULL, ++ball_count, ball_size, ball_padding, container->data.size);
             } else if (ball_count > 0 && IsKeyPressed(KEY_TAB)) {
                 free_balls(balls, ball_count);
-                balls = create_balls(NULL, --ball_count);
+                balls = create_balls(NULL, --ball_count, ball_size, ball_padding, container->data.size);
             }
         EndDrawing();
     }
@@ -107,7 +120,7 @@ int main(int argc, char **argv){
     return 0;
 }
 
-ball* create_balls(ball* balls, int ball_count){
+ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padding, int c_size){
     if (balls == NULL) {
         balls = malloc(sizeof(ball) * ball_count);
     }
@@ -117,15 +130,15 @@ ball* create_balls(ball* balls, int ball_count){
         spd->x = GetRandomValue(-300, 300);
         spd->y = GetRandomValue(-300, 300);
         Vector2* pos = malloc(sizeof(Vector2));
-        pos->x = GetRandomValue(CENTER.x - CONTAINER_SIZE / 4.0, CENTER.x + CONTAINER_SIZE / 4.0);
-        pos->y = GetRandomValue(CENTER.y - CONTAINER_SIZE / 4.0, CENTER.y + CONTAINER_SIZE / 4.0);
+        pos->x = GetRandomValue(CENTER.x - c_size / 4.0, CENTER.x + c_size / 4.0);
+        pos->y = GetRandomValue(CENTER.y - c_size / 4.0, CENTER.y + c_size / 4.0);
         ball bd = {
             .id = i,
             .speed = spd,
             .pos = pos, 
             .color = ColorFromHSV(GetRandomValue(0.0, 360.0), 0.7, 0.9),
-            .size = 16,
-            .padding = 8,
+            .size = ball_size,
+            .padding = ball_padding,
         };
         balls[i] = bd;
     }
