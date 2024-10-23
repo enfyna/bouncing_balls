@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "container.h"
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,6 +62,9 @@ int main(int argc, char **argv){
             ball_count = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "-ll")) {
             line_len = atoi(argv[++i]);
+            if (line_len > INT_MAX / 2) {
+                line_len = INT_MAX / 2;
+            }
         } else if (!strcmp(argv[i], "debug")) {
             debug = true;
         }

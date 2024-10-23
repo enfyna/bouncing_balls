@@ -24,6 +24,9 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     if (c->debug) {
         print_debug(c, b);
     }
+    if (b->point_count > b->line_len * 2) {
+        b->point_count -= b->line_len;
+    }
     for (int i = min(b->point_count, b->line_len) - 1; i >= 0; i--) {
         if (c->line_mode == 3) {
             if (i == 0) continue;
