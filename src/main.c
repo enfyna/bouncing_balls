@@ -23,7 +23,7 @@
 void draw_debug_container(); 
 void draw_container(void);
 
-ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padding, int c_size);
+ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padding, int line_len, int c_size);
 void free_balls(ball* balls, int ball_count);
 
 int main(int argc, char **argv){
@@ -35,6 +35,7 @@ int main(int argc, char **argv){
     float c_damp = 0.8;
     int c_size = 200;
     short line_mode = 0;
+    int line_len = -1;
 
     bool debug = false;
     float gravity = 1000.0;
@@ -58,6 +59,8 @@ int main(int argc, char **argv){
             ball_size = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "-bc")) {
             ball_count = atoi(argv[++i]);
+        } else if (!strcmp(argv[i], "-ll")) {
+            line_len = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "debug")) {
             debug = true;
         }
@@ -81,7 +84,7 @@ int main(int argc, char **argv){
     };
     container->data = data;
 
-    ball* balls = create_balls(NULL, ball_count, ball_size, ball_padding, c_size);
+    ball* balls = create_balls(NULL, ball_count, ball_size, ball_padding, line_len, c_size);
     while (!WindowShouldClose() && !IsKeyDown(KEY_ENTER)) {
         BeginDrawing();
             ClearBackground(BG_COLOR);
@@ -112,10 +115,10 @@ int main(int argc, char **argv){
             }
             if (IsKeyPressed(KEY_SPACE)) {
                 free_balls(balls, ball_count);
-                balls = create_balls(NULL, ++ball_count, ball_size, ball_padding, container->data.size);
+                balls = create_balls(NULL, ++ball_count, ball_size, ball_padding, line_len, container->data.size);
             } else if (ball_count > 0 && IsKeyPressed(KEY_TAB)) {
                 free_balls(balls, ball_count);
-                balls = create_balls(NULL, --ball_count, ball_size, ball_padding, container->data.size);
+                balls = create_balls(NULL, --ball_count, ball_size, ball_padding, line_len, container->data.size);
             }
         EndDrawing();
     }
@@ -127,7 +130,7 @@ int main(int argc, char **argv){
     return 0;
 }
 
-ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padding, int c_size){
+ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padding, int line_len, int c_size){
     if (balls == NULL) {
         balls = malloc(sizeof(ball) * ball_count);
     }
@@ -139,9 +142,13 @@ ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padd
         Vector2* pos = malloc(sizeof(Vector2));
         pos->x = GetRandomValue(CENTER.x - c_size / 4.0, CENTER.x + c_size / 4.0);
         pos->y = GetRandomValue(CENTER.y - c_size / 4.0, CENTER.y + c_size / 4.0);
+        if (line_len == -1) {
+            line_len = GetRandomValue(10, 1000);
+        }
         ball bd = {
             .id = i,
-            .points = malloc(sizeof(Vector2) * 255),
+            .points = malloc(sizeof(Vector2) * line_len),
+            .line_len = line_len,
             .point_count = 0,
             .speed = spd,
             .pos = pos, 

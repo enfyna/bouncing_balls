@@ -2,6 +2,10 @@
 
 #include "container.h"
 
+int min(int a, int b){
+    return (a < b) ? a : b;
+}
+
 Container* get_container(int type){
     Container *c = malloc(sizeof(Container));
 

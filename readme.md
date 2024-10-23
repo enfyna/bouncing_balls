@@ -78,6 +78,10 @@ Ball Count:
 
     -bc <int>
 
+Line length (line mode 2 & 3):
+
+    -ll <int>
+
 
 # Develop
 

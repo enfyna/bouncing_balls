@@ -8,9 +8,6 @@
 static Vector2 rotateVec2(Vector2 size, float deg);
 static void draw_degree(ContainerData* c, Color color, float deg);
 static void print_debug(ContainerData* c, ball* b);
-static short min(short a, short b){
-    return (a < b) ? a : b;
-}
 
 void draw_circle_container(ContainerData* c){
     DrawRing(
@@ -27,10 +24,10 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     if (c->debug) {
         print_debug(c, b);
     }
-    for (short i = min(b->point_count, LINE_LEN) - 1; i >= 0; i--) {
+    for (int i = min(b->point_count, b->line_len) - 1; i >= 0; i--) {
         if (c->line_mode == 3) {
             if (i == 0) continue;
-            if (b->point_count > LINE_LEN && i == b->point_count % LINE_LEN) continue;
+            if (b->point_count > b->line_len && i == b->point_count % b->line_len) continue;
             DrawLine(
                 b->points[i].x, b->points[i].y,
                 b->points[i - 1].x, b->points[i - 1].y,
@@ -46,13 +43,13 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     }
     if (c->line_mode == 3 
         // draw only on wrap
-        && LINE_LEN <= b->point_count 
+        && b->line_len <= b->point_count 
         // dont draw on point change
-        && b->point_count % LINE_LEN != 0
+        && b->point_count % b->line_len != 0
         ) {
         DrawLine(
             b->points[0].x, b->points[0].y,
-            b->points[LINE_LEN - 1].x, b->points[LINE_LEN - 1].y,
+            b->points[b->line_len - 1].x, b->points[b->line_len - 1].y,
             b->color
         );
     }
@@ -68,7 +65,7 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     const float c_c2 = pow((c->size - b->size * 2) / 2.0, 2);
 
     if (c->line_mode == 2 || c->line_mode == 3) {
-        b->points[b->point_count % LINE_LEN] = *b->pos;
+        b->points[b->point_count % b->line_len] = *b->pos;
         b->point_count += 1;
     }
 
@@ -105,7 +102,7 @@ void circle_container_hitbox(ContainerData* c, ball* b){
     collision_point.y += c->center.y;
 
     if (c->line_mode == 1) {
-        b->points[b->point_count % LINE_LEN] = collision_point;
+        b->points[b->point_count % b->line_len] = collision_point;
         b->point_count += 1;
     }
     return;
