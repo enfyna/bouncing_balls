@@ -91,6 +91,14 @@ int main(int argc, char **argv){
     ball* balls = create_balls(NULL, ball_count, ball_size, ball_padding, line_len, c_size);
     while (!WindowShouldClose() && !IsKeyDown(KEY_ENTER)) {
         BeginDrawing();
+            if (IsKeyPressed(KEY_Q)) {
+                EndDrawing();
+                while (!IsKeyPressed(KEY_Q)) {
+                    BeginDrawing();
+                    EndDrawing();
+                }
+                BeginDrawing();
+            }
             ClearBackground(BG_COLOR);
             Vector2 m_pos = GetMousePosition();
 
