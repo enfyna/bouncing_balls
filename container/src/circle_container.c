@@ -1,13 +1,10 @@
 #include <math.h>
-#include <stdio.h>
 
 #include "container.h"
 #include "raylib.h"
 #include "raymath.h"
 
 static Vector2 rotateVec2(Vector2 size, float deg);
-static void draw_degree(ContainerData* c, Color color, float deg);
-static void print_debug(ContainerData* c, ball* b);
 
 void draw_circle_container(ContainerData* c){
     DrawRing(
@@ -21,9 +18,6 @@ void draw_circle_container(ContainerData* c){
 }
 
 void circle_container_hitbox(ContainerData* c, ball* b){
-    if (c->debug) {
-        print_debug(c, b);
-    }
     if (b->point_count > b->line_len * 2) {
         b->point_count -= b->line_len;
     }
@@ -44,7 +38,7 @@ void circle_container_hitbox(ContainerData* c, ball* b){
             b->color
         );
     }
-    if (c->line_mode == 3 
+    if (c->line_mode == 3
         // draw only on wrap
         && b->line_len <= b->point_count 
         // dont draw on point change
@@ -109,49 +103,6 @@ void circle_container_hitbox(ContainerData* c, ball* b){
         b->point_count += 1;
     }
     return;
-}
-
-static void print_debug(ContainerData* c, ball* b){
-    b->speed->y += c->gravity * c->delta;
-
-    const float nx = b->pos->x + b->speed->x * c->delta; 
-    const float ny = b->pos->y + b->speed->y * c->delta; 
-
-    const float x_diff = c->center.x - nx;
-    const float y_diff = c->center.y - ny;
-
-    float rad = atan(y_diff / x_diff);
-    float deg = rad * RAD2DEG;
-    if (x_diff > 0) {
-        deg += 180;
-    }
-
-    draw_degree(c, BLUE, 0);
-    draw_degree(c, BLUE, 90);
-    draw_degree(c, BLUE, 120);
-    draw_degree(c, RED, deg);
-
-    DrawLine(
-        b->pos->x, b->pos->y,
-        b->pos->x + b->speed->x,
-        b->pos->y + b->speed->y,
-        WHITE
-    );
-}
-
-static void draw_degree(ContainerData* c, Color color, float deg){
-    Vector2 res = rotateVec2(
-        (Vector2){ c->size / 2.0, c->size / 2.0 },
-        deg
-    );
-    printf("deg: %lf\n", deg + 90);
-    DrawLine(
-        c->center.x,
-        c->center.y,
-        c->center.x + res.x,
-        c->center.y + res.y,
-        color
-    );
 }
 
 static Vector2 rotateVec2(Vector2 size, float deg){

@@ -86,15 +86,6 @@ void square_container_hitbox(ContainerData* c, ball* b){
         collision = 4;
     }
 
-    if (c->debug) {
-        DrawLine(
-            b->pos->x, b->pos->y,
-            b->pos->x + b->speed->x,
-            b->pos->y + b->speed->y,
-            WHITE
-        );
-    }
-
     b->pos->x = nx;
     b->pos->y = ny;
 

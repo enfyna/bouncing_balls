@@ -13,7 +13,7 @@
 #define BG_COLOR BLACK
 
 #define TITLE "Bouncing Balls"
-#define FPS 60.0
+#define FPS 144.0
 
 #define CONTAINER_PADDING 4
 #define CONTAINER_WIDTH CONTAINER_SIZE + CONTAINER_PADDING * 2
@@ -21,7 +21,6 @@
 
 #define GRAVITY 1000 // 100.0
 
-void draw_debug_container(); 
 void draw_container(void);
 
 ball* create_balls(ball* balls, int ball_count, short ball_size, short ball_padding, int line_len, int c_size);
@@ -38,7 +37,6 @@ int main(int argc, char **argv){
     short line_mode = 0;
     int line_len = -1;
 
-    bool debug = false;
     float gravity = 1000.0;
 
     for (int i = 0; i < argc; i++) {
@@ -65,8 +63,6 @@ int main(int argc, char **argv){
             if (line_len > INT_MAX / 2) {
                 line_len = INT_MAX / 2;
             }
-        } else if (!strcmp(argv[i], "debug")) {
-            debug = true;
         }
     }
 
@@ -83,7 +79,6 @@ int main(int argc, char **argv){
         .damp = c_damp,
         .bg_color = BG_COLOR,
         .color = CONTAINER_COLOR,
-        .debug = debug,
         .line_mode = line_mode,
     };
     container->data = data;
@@ -105,12 +100,6 @@ int main(int argc, char **argv){
             container->data.delta = GetFrameTime();
 
             container->draw(&container->data);
-            if (debug) {
-                const char* m_str = TextFormat("x: %d y: %d", (int)m_pos.x, (int)m_pos.y);
-                draw_debug_container();
-                DrawText(m_str, m_pos.x + 10, m_pos.y + 10, 20, WHITE);
-                DrawCircle(m_pos.x, m_pos.y, 12, IsMouseButtonDown(MOUSE_LEFT_BUTTON) ? BLUE : IsMouseButtonDown(MOUSE_RIGHT_BUTTON) ? GREEN : RED);
-            }
 
             for (int i = 0; i < ball_count; i++) {
                 ball b = balls[i];
@@ -182,22 +171,4 @@ void free_balls(ball* balls, int ball_count){
     }
     free(balls);
     return;
-}
-
-void draw_debug_container() {
-    DrawCircle(25,  50, 5, (Color){ 0, 0, 255, 255 });
-    DrawCircle(25, 100, 5, (Color){ 0, 0, 240, 255 });
-    DrawCircle(25, 150, 5, (Color){ 0, 0, 200, 255 });
-    DrawCircle(25, 200, 5, (Color){ 0, 0, 160, 255 });
-    DrawCircle(25, 250, 5, (Color){ 0, 0, 120, 255 });
-    DrawCircle(25, 300, 5, (Color){ 0, 0,  80, 255 });
-    DrawCircle(25, 350, 5, (Color){ 0, 0,  40, 255 });
-
-    DrawCircle( 50, 25, 5, (Color){ 0, 255, 0, 255 });
-    DrawCircle(100, 25, 5, (Color){ 0, 240, 0, 255 });
-    DrawCircle(150, 25, 5, (Color){ 0, 200, 0, 255 });
-    DrawCircle(200, 25, 5, (Color){ 0, 160, 0, 255 });
-    DrawCircle(250, 25, 5, (Color){ 0, 120, 0, 255 });
-    DrawCircle(300, 25, 5, (Color){ 0,  80, 0, 255 });
-    DrawCircle(350, 25, 5, (Color){ 0,  40, 0, 255 });
 }
