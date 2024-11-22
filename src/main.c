@@ -84,15 +84,15 @@ int main(int argc, char **argv){
     container->data = data;
 
     ball* balls = create_balls(NULL, ball_count, ball_size, ball_padding, line_len, c_size);
+    bool isPaused = false;
     while (!WindowShouldClose() && !IsKeyDown(KEY_ENTER)) {
         BeginDrawing();
             if (IsKeyPressed(KEY_Q)) {
+                isPaused = !isPaused;
+            }
+            if (isPaused) {
                 EndDrawing();
-                while (!IsKeyPressed(KEY_Q)) {
-                    BeginDrawing();
-                    EndDrawing();
-                }
-                BeginDrawing();
+                continue;
             }
             ClearBackground(BG_COLOR);
             Vector2 m_pos = GetMousePosition();
